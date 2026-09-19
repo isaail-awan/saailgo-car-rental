@@ -1,6 +1,7 @@
 import { useState } from "react";
 import cars from "../data/cars";
 import CarCard from "./CarCard";
+import Reveal from "./Reveal";
 import { getUpcomingBookings } from "../utils/bookings";
 
 const categories = ["All", ...new Set(cars.map((c) => c.category))];
@@ -33,58 +34,62 @@ export default function CarList({ onBook, bookings = [] }) {
 
   return (
     <section id="cars" className="max-w-6xl mx-auto px-4 py-20 scroll-mt-16">
-      <div className="text-center mb-10">
-        <p className="text-sm font-semibold uppercase tracking-widest text-amber-500">Our Fleet</p>
-        <h2 className="mt-2 text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white">Choose your ride</h2>
-        <p className="mt-3 text-slate-600 max-w-xl mx-auto dark:text-slate-400">
-          Pick from sedans, hatchbacks, SUVs and vans. All cars are regularly serviced and ready to go.
-        </p>
-      </div>
+      <Reveal>
+        <div className="text-center mb-10">
+          <p className="text-sm font-semibold uppercase tracking-widest text-amber-500">Our Fleet</p>
+          <h2 className="mt-2 text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white">Choose your ride</h2>
+          <p className="mt-3 text-slate-600 max-w-xl mx-auto dark:text-slate-400">
+            Pick from sedans, hatchbacks, SUVs and vans. All cars are regularly serviced and ready to go.
+          </p>
+        </div>
+      </Reveal>
 
       {/* Search and filters */}
-      <div className="mb-10 rounded-2xl bg-white p-5 shadow-md ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800">
-        <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search by car name or model..." className="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none placeholder:text-slate-400 focus:border-amber-400 focus:ring-2 focus:ring-amber-400/30 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500" />
+      <Reveal delay={100}>
+        <div className="mb-10 rounded-2xl bg-white p-5 shadow-md ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800">
+          <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search by car name or model..." className="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-amber-400 focus:ring-2 focus:ring-amber-400/30 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500" />
 
-        <div className="mt-5 flex flex-wrap gap-2">
-          {categories.map((c) => (
-            <button
-              key={c}
-              onClick={() => setCategory(c)}
-              className={"rounded-full px-4 py-1.5 text-sm font-medium transition " + (category === c ? "bg-slate-900 text-white dark:bg-amber-400 dark:text-slate-900" : "bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700")}
-            >
-              {c}
-            </button>
-          ))}
+          <div className="mt-5 flex flex-wrap gap-2">
+            {categories.map((c) => (
+              <button
+                key={c}
+                onClick={() => setCategory(c)}
+                className={"rounded-full px-4 py-1.5 text-sm font-medium transition active:scale-95 " + (category === c ? "bg-slate-900 text-white dark:bg-amber-400 dark:text-slate-900" : "bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700")}
+              >
+                {c}
+              </button>
+            ))}
+          </div>
+
+          <div className="mt-5 grid gap-5 md:grid-cols-3 items-end">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1 dark:text-slate-300">Fuel type</label>
+              <select value={fuel} onChange={(e) => setFuel(e.target.value)} className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none transition focus:border-amber-400 dark:border-slate-700 dark:bg-slate-800 dark:text-white">
+                {fuels.map((f) => (
+                  <option key={f} value={f}>{f}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1 dark:text-slate-300">
+                Max price: <span className="font-bold">Rs. {maxPrice.toLocaleString()}</span> / day
+              </label>
+              <input type="range" min="0" max={highestPrice} step="1000" value={maxPrice} onChange={(e) => setMaxPrice(Number(e.target.value))} className="w-full accent-amber-500" />
+            </div>
+
+            <div className="flex items-center justify-between gap-4">
+              <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+                <input type="checkbox" checked={onlyAvailable} onChange={(e) => setOnlyAvailable(e.target.checked)} className="h-4 w-4 accent-amber-500" />
+                Available only
+              </label>
+              <button onClick={resetFilters} className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100 active:scale-95 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">
+                Reset
+              </button>
+            </div>
+          </div>
         </div>
-
-        <div className="mt-5 grid gap-5 md:grid-cols-3 items-end">
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1 dark:text-slate-300">Fuel type</label>
-            <select value={fuel} onChange={(e) => setFuel(e.target.value)} className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-amber-400 dark:border-slate-700 dark:bg-slate-800 dark:text-white">
-              {fuels.map((f) => (
-                <option key={f} value={f}>{f}</option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1 dark:text-slate-300">
-              Max price: <span className="font-bold">Rs. {maxPrice.toLocaleString()}</span> / day
-            </label>
-            <input type="range" min="0" max={highestPrice} step="1000" value={maxPrice} onChange={(e) => setMaxPrice(Number(e.target.value))} className="w-full accent-amber-500" />
-          </div>
-
-          <div className="flex items-center justify-between gap-4">
-            <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
-              <input type="checkbox" checked={onlyAvailable} onChange={(e) => setOnlyAvailable(e.target.checked)} className="h-4 w-4 accent-amber-500" />
-              Available only
-            </label>
-            <button onClick={resetFilters} className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">
-              Reset
-            </button>
-          </div>
-        </div>
-      </div>
+      </Reveal>
 
       <p className="mb-6 text-sm text-slate-500 dark:text-slate-400">
         Showing {filteredCars.length} of {cars.length} cars
@@ -92,16 +97,18 @@ export default function CarList({ onBook, bookings = [] }) {
 
       {filteredCars.length > 0 ? (
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-          {filteredCars.map((car) => (
-            <CarCard key={car.id} car={car} onBook={onBook} bookings={getUpcomingBookings(bookings, car.id)} />
+          {filteredCars.map((car, index) => (
+            <Reveal key={car.id} delay={(index % 3) * 100} className="h-full">
+              <CarCard car={car} onBook={onBook} bookings={getUpcomingBookings(bookings, car.id)} />
+            </Reveal>
           ))}
         </div>
       ) : (
-        <div className="rounded-2xl bg-white py-16 text-center shadow-md ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800">
+        <div className="anim-fade-in rounded-2xl bg-white py-16 text-center shadow-md ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800">
           <p className="text-5xl">🔍</p>
           <h3 className="mt-4 text-xl font-bold text-slate-900 dark:text-white">No cars found</h3>
           <p className="mt-2 text-slate-600 dark:text-slate-400">Try changing your search or filters.</p>
-          <button onClick={resetFilters} className="mt-6 rounded-lg bg-amber-400 px-5 py-2 font-semibold text-slate-900 transition hover:bg-amber-300">
+          <button onClick={resetFilters} className="mt-6 rounded-lg bg-amber-400 px-5 py-2 font-semibold text-slate-900 transition hover:bg-amber-300 active:scale-95">
             Clear all filters
           </button>
         </div>

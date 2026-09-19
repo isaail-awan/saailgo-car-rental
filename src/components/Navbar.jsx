@@ -15,10 +15,12 @@ function NavLabel({ link, count }) {
   return (
     <>
       {link.label}
-      {link.to === "/#history" && count > 0 && <span className="ml-2 rounded-full bg-amber-400 px-2 py-0.5 text-xs font-bold text-slate-900">{count}</span>}
+      {link.to === "/#history" && count > 0 && <span key={count} className="anim-badge ml-2 inline-block rounded-full bg-amber-400 px-2 py-0.5 text-xs font-bold text-slate-900">{count}</span>}
     </>
   );
 }
+
+const desktopLinkClass = "relative transition-colors hover:text-amber-400 after:absolute after:-bottom-1 after:left-0 after:h-0.5 after:w-full after:origin-left after:scale-x-0 after:bg-amber-400 after:content-[''] after:transition-transform after:duration-300 hover:after:scale-x-100";
 
 export default function Navbar({ bookingCount = 0, dark, onToggleTheme }) {
   const [open, setOpen] = useState(false);
@@ -33,7 +35,7 @@ export default function Navbar({ bookingCount = 0, dark, onToggleTheme }) {
           <ul className="hidden md:flex items-center gap-8 mr-4">
             {links.map((l) => (
               <li key={l.to}>
-                <Link to={l.to} className="hover:text-amber-400 transition-colors"><NavLabel link={l} count={bookingCount} /></Link>
+                <Link to={l.to} className={desktopLinkClass}><NavLabel link={l} count={bookingCount} /></Link>
               </li>
             ))}
           </ul>
@@ -53,7 +55,7 @@ export default function Navbar({ bookingCount = 0, dark, onToggleTheme }) {
 
       {/* Mobile menu */}
       {open && (
-        <ul className="md:hidden bg-slate-900 px-4 pb-4 space-y-3">
+        <ul className="anim-slide-down md:hidden bg-slate-900 px-4 pb-4 space-y-3">
           {links.map((l) => (
             <li key={l.to}>
               <Link to={l.to} onClick={() => setOpen(false)} className="block py-1 hover:text-amber-400"><NavLabel link={l} count={bookingCount} /></Link>

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useLocation } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import ScrollToHash from "./components/ScrollToHash";
@@ -12,6 +12,7 @@ import { loadBookings, saveBookings, isActive } from "./utils/bookings";
 export default function App() {
   const [bookings, setBookings] = useState(loadBookings);
   const [dark, toggleTheme] = useTheme();
+  const location = useLocation();
 
   useEffect(() => {
     saveBookings(bookings);
@@ -30,16 +31,18 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-200">
+    <div className="min-h-screen overflow-x-clip bg-slate-50 text-slate-800 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-200">
       <ScrollToHash />
       <Navbar bookingCount={bookings.filter(isActive).length} dark={dark} onToggleTheme={toggleTheme} />
 
       <main className="pt-16">
-        <Routes>
-          <Route path="/" element={<Home bookings={bookings} onConfirm={addBooking} onCancel={cancelBooking} onClear={clearBookings} />} />
-          <Route path="/cars/:id" element={<CarDetails bookings={bookings} />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <div key={location.pathname} className="page-enter">
+          <Routes>
+            <Route path="/" element={<Home bookings={bookings} onConfirm={addBooking} onCancel={cancelBooking} onClear={clearBookings} />} />
+            <Route path="/cars/:id" element={<CarDetails bookings={bookings} />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </div>
       </main>
 
       <Footer />
