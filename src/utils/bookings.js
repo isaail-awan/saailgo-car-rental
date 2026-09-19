@@ -27,11 +27,16 @@ export function shortDate(iso) {
   return new Date(iso + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" });
 }
 
-// Kisi car ki aane wali (ya chal rahi) bookings
+// Cancelled bookings ke dates free ho jate hain
+export function isActive(booking) {
+  return booking.status !== "cancelled";
+}
+
+// Kisi car ki aane wali (ya chal rahi) active bookings
 export function getUpcomingBookings(bookings, carId) {
   const today = getToday();
   return bookings
-    .filter((b) => b.carId === carId && b.returnDate >= today)
+    .filter((b) => isActive(b) && b.carId === carId && b.returnDate >= today)
     .sort((a, b) => a.pickupDate.localeCompare(b.pickupDate));
 }
 
@@ -39,6 +44,6 @@ export function getUpcomingBookings(bookings, carId) {
 export function findConflict(bookings, carId, pickupDate, returnDate) {
   if (!carId || !pickupDate || !returnDate) return null;
   if (returnDate <= pickupDate) return null;
-  const found = bookings.find((b) => b.carId === carId && pickupDate < b.returnDate && b.pickupDate < returnDate);
+  const found = bookings.find((b) => isActive(b) && b.carId === carId && pickupDate < b.returnDate && b.pickupDate < returnDate);
   return found || null;
 }

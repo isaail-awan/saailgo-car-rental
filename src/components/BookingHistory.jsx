@@ -6,11 +6,16 @@ function formatDate(iso) {
   return new Date(iso + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
 }
 
+function formatDateTime(iso) {
+  return new Date(iso).toLocaleString("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true });
+}
+
 function daysBetween(a, b) {
   return Math.max(0, Math.round((new Date(b) - new Date(a)) / 86400000));
 }
 
 function getStatus(booking, today) {
+  if (booking.status === "cancelled") return "cancelled";
   if (booking.returnDate < today) return "completed";
   if (booking.pickupDate <= today) return "ongoing";
   return "upcoming";
@@ -20,22 +25,25 @@ const statusStyles = {
   upcoming: "bg-amber-50 text-amber-700 ring-amber-200",
   ongoing: "bg-sky-50 text-sky-700 ring-sky-200",
   completed: "bg-green-50 text-green-700 ring-green-200",
+  cancelled: "bg-red-50 text-red-700 ring-red-200",
 };
 
 const statusLabels = {
   upcoming: "Upcoming",
   ongoing: "Ongoing",
   completed: "Completed",
+  cancelled: "Cancelled",
 };
 
 function BookingItem({ row, onCancel }) {
   const [imgError, setImgError] = useState(false);
   const [confirming, setConfirming] = useState(false);
   const { car, status } = row;
+  const isCancelled = status === "cancelled";
 
   return (
     <div className="flex flex-col gap-5 rounded-2xl bg-white p-5 shadow-md ring-1 ring-slate-200 sm:flex-row sm:items-center">
-      <div className="h-28 w-full shrink-0 overflow-hidden rounded-xl bg-gradient-to-br from-slate-200 to-slate-300 sm:w-40">
+      <div className={"h-28 w-full shrink-0 overflow-hidden rounded-xl bg-gradient-to-br from-slate-200 to-slate-300 sm:w-40 " + (isCancelled ? "opacity-50 grayscale" : "")}>
         {car && !imgError ? (
           <img src={car.image} alt={car.name} onError={() => setImgError(true)} className="h-full w-full object-cover" />
         ) : (
@@ -45,7 +53,7 @@ function BookingItem({ row, onCancel }) {
 
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-3">
-          <h3 className="text-lg font-bold text-slate-900">{car ? car.name : "Car"}</h3>
+          <h3 className={"text-lg font-bold " + (isCancelled ? "text-slate-400" : "text-slate-900")}>{car ? car.name : "Car"}</h3>
           <span className={"rounded-full px-3 py-0.5 text-xs font-semibold ring-1 " + statusStyles[status]}>{statusLabels[status]}</span>
         </div>
         <p className="mt-1 font-mono text-xs text-slate-400">{row.id}</p>
@@ -54,10 +62,11 @@ function BookingItem({ row, onCancel }) {
           <span className="ml-2 text-slate-400">({row.days} {row.days === 1 ? "day" : "days"})</span>
         </p>
         {row.name && <p className="mt-1 text-sm text-slate-500">Booked by {row.name}</p>}
+        {isCancelled && row.cancelledAt && <p className="mt-2 text-sm font-medium text-red-600">Cancelled on {formatDateTime(row.cancelledAt)}</p>}
       </div>
 
       <div className="flex shrink-0 flex-row items-center justify-between gap-4 sm:flex-col sm:items-end">
-        <p className="text-xl font-extrabold text-slate-900">Rs. {row.total.toLocaleString()}</p>
+        <p className={"text-xl font-extrabold " + (isCancelled ? "text-slate-400 line-through" : "text-slate-900")}>Rs. {row.total.toLocaleString()}</p>
 
         {status === "upcoming" && (confirming ? (
           <div className="flex gap-2">
@@ -83,8 +92,9 @@ export default function BookingHistory({ bookings = [], onCancel, onClear }) {
     return { ...b, car, days, total, status: getStatus(b, today) };
   });
 
-  const activeCount = rows.filter((r) => r.status !== "completed").length;
-  const totalValue = rows.reduce((sum, r) => sum + r.total, 0);
+  const activeCount = rows.filter((r) => r.status === "upcoming" || r.status === "ongoing").length;
+  const cancelledCount = rows.filter((r) => r.status === "cancelled").length;
+  const totalValue = rows.filter((r) => r.status !== "cancelled").reduce((sum, r) => sum + r.total, 0);
 
   const handleClear = () => {
     onClear();
@@ -118,7 +128,7 @@ export default function BookingHistory({ bookings = [], onCancel, onClear }) {
         </div>
       ) : (
         <>
-          <div className="mb-8 grid grid-cols-3 gap-4">
+          <div className="mb-8 grid grid-cols-2 gap-4 md:grid-cols-4">
             <div className="rounded-2xl bg-white p-4 text-center shadow-md ring-1 ring-slate-200">
               <p className="text-2xl font-extrabold text-slate-900 md:text-3xl">{rows.length}</p>
               <p className="mt-1 text-xs text-slate-500 md:text-sm">Total bookings</p>
@@ -126,6 +136,10 @@ export default function BookingHistory({ bookings = [], onCancel, onClear }) {
             <div className="rounded-2xl bg-white p-4 text-center shadow-md ring-1 ring-slate-200">
               <p className="text-2xl font-extrabold text-slate-900 md:text-3xl">{activeCount}</p>
               <p className="mt-1 text-xs text-slate-500 md:text-sm">Active</p>
+            </div>
+            <div className="rounded-2xl bg-white p-4 text-center shadow-md ring-1 ring-slate-200">
+              <p className="text-2xl font-extrabold text-red-500 md:text-3xl">{cancelledCount}</p>
+              <p className="mt-1 text-xs text-slate-500 md:text-sm">Cancelled</p>
             </div>
             <div className="rounded-2xl bg-white p-4 text-center shadow-md ring-1 ring-slate-200">
               <p className="text-lg font-extrabold text-slate-900 md:text-3xl">Rs. {totalValue.toLocaleString()}</p>

@@ -5,7 +5,7 @@ import CarList from "./components/CarList";
 import BookingForm from "./components/BookingForm";
 import BookingHistory from "./components/BookingHistory";
 import Footer from "./components/Footer";
-import { loadBookings, saveBookings } from "./utils/bookings";
+import { loadBookings, saveBookings, isActive } from "./utils/bookings";
 
 export default function App() {
   const [bookingRequest, setBookingRequest] = useState(null);
@@ -20,7 +20,7 @@ export default function App() {
   };
 
   const cancelBooking = (id) => {
-    setBookings((prev) => prev.filter((b) => b.id !== id));
+    setBookings((prev) => prev.map((b) => (b.id === id ? { ...b, status: "cancelled", cancelledAt: new Date().toISOString() } : b)));
   };
 
   const clearBookings = () => {
@@ -35,7 +35,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800">
-      <Navbar bookingCount={bookings.length} />
+      <Navbar bookingCount={bookings.filter(isActive).length} />
 
       <main className="pt-16">
         <Hero />
