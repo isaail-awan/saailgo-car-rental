@@ -1,15 +1,15 @@
 import { useState, useEffect } from "react";
+import { Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
-import Hero from "./components/Hero";
-import CarList from "./components/CarList";
-import BookingForm from "./components/BookingForm";
-import BookingHistory from "./components/BookingHistory";
 import Footer from "./components/Footer";
+import ScrollToHash from "./components/ScrollToHash";
+import Home from "./pages/Home";
+import CarDetails from "./pages/CarDetails";
+import NotFound from "./pages/NotFound";
 import useTheme from "./hooks/useTheme";
 import { loadBookings, saveBookings, isActive } from "./utils/bookings";
 
 export default function App() {
-  const [bookingRequest, setBookingRequest] = useState(null);
   const [bookings, setBookings] = useState(loadBookings);
   const [dark, toggleTheme] = useTheme();
 
@@ -29,21 +29,17 @@ export default function App() {
     setBookings([]);
   };
 
-  const handleBook = (carId) => {
-    setBookingRequest({ carId, stamp: Date.now() });
-    const el = document.getElementById("booking");
-    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-  };
-
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-200">
+      <ScrollToHash />
       <Navbar bookingCount={bookings.filter(isActive).length} dark={dark} onToggleTheme={toggleTheme} />
 
       <main className="pt-16">
-        <Hero />
-        <CarList onBook={handleBook} bookings={bookings} />
-        <BookingForm bookingRequest={bookingRequest} bookings={bookings} onConfirm={addBooking} />
-        <BookingHistory bookings={bookings} onCancel={cancelBooking} onClear={clearBookings} />
+        <Routes>
+          <Route path="/" element={<Home bookings={bookings} onConfirm={addBooking} onCancel={cancelBooking} onClear={clearBookings} />} />
+          <Route path="/cars/:id" element={<CarDetails bookings={bookings} />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
       </main>
 
       <Footer />

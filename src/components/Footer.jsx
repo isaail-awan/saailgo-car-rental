@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { brand } from "../data/brand";
 
 export default function Footer() {
@@ -14,9 +15,10 @@ export default function Footer() {
         <div>
           <h4 className="text-white font-semibold mb-2">Quick Links</h4>
           <ul className="space-y-1 text-sm">
-            <li><a href="#home" className="hover:text-amber-400">Home</a></li>
-            <li><a href="#cars" className="hover:text-amber-400">Cars</a></li>
-            <li><a href="#booking" className="hover:text-amber-400">Book Now</a></li>
+            <li><Link to="/#home" className="hover:text-amber-400">Home</Link></li>
+            <li><Link to="/#cars" className="hover:text-amber-400">Cars</Link></li>
+            <li><Link to="/#booking" className="hover:text-amber-400">Book Now</Link></li>
+            <li><Link to="/#history" className="hover:text-amber-400">My Bookings</Link></li>
           </ul>
         </div>
 
@@ -26,9 +28,9 @@ export default function Footer() {
             <li>Email: {brand.email}</li>
             <li>Phone: {brand.phone}</li>
             <li className="flex gap-4 pt-2">
-              <a href="#" className="hover:text-amber-400">Facebook</a>
-              <a href="#" className="hover:text-amber-400">Instagram</a>
-              <a href="#" className="hover:text-amber-400">LinkedIn</a>
+              <a href="https://facebook.com" target="_blank" rel="noreferrer" className="hover:text-amber-400">Facebook</a>
+              <a href="https://instagram.com" target="_blank" rel="noreferrer" className="hover:text-amber-400">Instagram</a>
+              <a href="https://linkedin.com" target="_blank" rel="noreferrer" className="hover:text-amber-400">LinkedIn</a>
             </li>
           </ul>
         </div>
