@@ -9,8 +9,8 @@ export default function CarCard({ car, onBook, bookings = [] }) {
   const statusClass = !car.available ? "bg-red-500 text-white" : hasBookings ? "bg-amber-500 text-white" : "bg-green-500 text-white";
 
   return (
-    <div className="group overflow-hidden rounded-2xl bg-white shadow-md ring-1 ring-slate-200 transition hover:-translate-y-1 hover:shadow-xl">
-      <div className="relative h-48 bg-gradient-to-br from-slate-200 to-slate-300">
+    <div className="group overflow-hidden rounded-2xl bg-white shadow-md ring-1 ring-slate-200 transition hover:-translate-y-1 hover:shadow-xl dark:bg-slate-900 dark:ring-slate-800">
+      <div className="relative h-48 bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-800">
         {!imgError ? (
           <img src={car.image} alt={car.name} onError={() => setImgError(true)} className="h-full w-full object-cover transition duration-300 group-hover:scale-105" />
         ) : (
@@ -23,15 +23,15 @@ export default function CarCard({ car, onBook, bookings = [] }) {
       </div>
 
       <div className="p-5">
-        <h3 className="text-lg font-bold text-slate-900">{car.name}</h3>
+        <h3 className="text-lg font-bold text-slate-900 dark:text-white">{car.name}</h3>
 
-        <div className="mt-3 flex gap-4 text-sm text-slate-600">
+        <div className="mt-3 flex gap-4 text-sm text-slate-600 dark:text-slate-400">
           <span>⛽ {car.fuel}</span>
           <span>👥 {car.seats} Seats</span>
         </div>
 
         {hasBookings && (
-          <div className="mt-4 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800 ring-1 ring-amber-200">
+          <div className="mt-4 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800 ring-1 ring-amber-200 dark:bg-amber-400/10 dark:text-amber-300 dark:ring-amber-400/30">
             <p className="font-semibold">Already booked:</p>
             {bookings.slice(0, 2).map((b) => (
               <p key={b.id}>{shortDate(b.pickupDate)} to {shortDate(b.returnDate)}</p>
@@ -41,15 +41,15 @@ export default function CarCard({ car, onBook, bookings = [] }) {
         )}
 
         <div className="mt-5 flex items-center justify-between">
-          <p className="text-xl font-extrabold text-slate-900">
+          <p className="text-xl font-extrabold text-slate-900 dark:text-white">
             Rs. {car.pricePerDay.toLocaleString()}
-            <span className="text-sm font-normal text-slate-500"> / day</span>
+            <span className="text-sm font-normal text-slate-500 dark:text-slate-400"> / day</span>
           </p>
 
           {car.available ? (
             <button onClick={() => onBook(car.id)} className="rounded-lg bg-amber-400 px-4 py-2 text-sm font-semibold text-slate-900 transition hover:bg-amber-300">Book Now</button>
           ) : (
-            <span className="cursor-not-allowed rounded-lg bg-slate-200 px-4 py-2 text-sm font-semibold text-slate-500">Unavailable</span>
+            <span className="cursor-not-allowed rounded-lg bg-slate-200 px-4 py-2 text-sm font-semibold text-slate-500 dark:bg-slate-800">Unavailable</span>
           )}
         </div>
       </div>

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { brand } from "../data/brand";
+import ThemeToggle from "./ThemeToggle";
 
 const links = [
   { label: "Home", href: "#home" },
@@ -18,33 +19,37 @@ function NavLabel({ link, count }) {
   );
 }
 
-export default function Navbar({ bookingCount = 0 }) {
+export default function Navbar({ bookingCount = 0, dark, onToggleTheme }) {
   const [open, setOpen] = useState(false);
 
   return (
-    <nav className="fixed top-0 inset-x-0 z-50 bg-slate-900/95 backdrop-blur text-white shadow">
+    <nav className="fixed top-0 inset-x-0 z-50 bg-slate-900/95 backdrop-blur text-white shadow dark:border-b dark:border-slate-800">
       <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
         <a href="#home" className="text-xl font-bold tracking-wide">
           {brand.first}<span className="text-amber-400">{brand.second}</span>
         </a>
 
-        {/* Desktop menu */}
-        <ul className="hidden md:flex items-center gap-8">
-          {links.map((l) => (
-            <li key={l.href}>
-              <a href={l.href} className="hover:text-amber-400 transition-colors"><NavLabel link={l} count={bookingCount} /></a>
-            </li>
-          ))}
-        </ul>
+        <div className="flex items-center gap-2">
+          {/* Desktop menu */}
+          <ul className="hidden md:flex items-center gap-8 mr-4">
+            {links.map((l) => (
+              <li key={l.href}>
+                <a href={l.href} className="hover:text-amber-400 transition-colors"><NavLabel link={l} count={bookingCount} /></a>
+              </li>
+            ))}
+          </ul>
 
-        {/* Mobile toggle */}
-        <button
-          className="md:hidden text-2xl"
-          onClick={() => setOpen(!open)}
-          aria-label="Toggle menu"
-        >
-          {open ? "✕" : "☰"}
-        </button>
+          <ThemeToggle dark={dark} onToggle={onToggleTheme} />
+
+          {/* Mobile toggle */}
+          <button
+            className="md:hidden text-2xl w-9 h-9"
+            onClick={() => setOpen(!open)}
+            aria-label="Toggle menu"
+          >
+            {open ? "✕" : "☰"}
+          </button>
+        </div>
       </div>
 
       {/* Mobile menu */}

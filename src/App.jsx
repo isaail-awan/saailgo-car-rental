@@ -5,11 +5,13 @@ import CarList from "./components/CarList";
 import BookingForm from "./components/BookingForm";
 import BookingHistory from "./components/BookingHistory";
 import Footer from "./components/Footer";
+import useTheme from "./hooks/useTheme";
 import { loadBookings, saveBookings, isActive } from "./utils/bookings";
 
 export default function App() {
   const [bookingRequest, setBookingRequest] = useState(null);
   const [bookings, setBookings] = useState(loadBookings);
+  const [dark, toggleTheme] = useTheme();
 
   useEffect(() => {
     saveBookings(bookings);
@@ -34,8 +36,8 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800">
-      <Navbar bookingCount={bookings.filter(isActive).length} />
+    <div className="min-h-screen bg-slate-50 text-slate-800 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-200">
+      <Navbar bookingCount={bookings.filter(isActive).length} dark={dark} onToggleTheme={toggleTheme} />
 
       <main className="pt-16">
         <Hero />
