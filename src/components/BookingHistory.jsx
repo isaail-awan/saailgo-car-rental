@@ -1,0 +1,145 @@
+import { useState } from "react";
+import cars from "../data/cars";
+import { getToday } from "../utils/bookings";
+
+function formatDate(iso) {
+  return new Date(iso + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+}
+
+function daysBetween(a, b) {
+  return Math.max(0, Math.round((new Date(b) - new Date(a)) / 86400000));
+}
+
+function getStatus(booking, today) {
+  if (booking.returnDate < today) return "completed";
+  if (booking.pickupDate <= today) return "ongoing";
+  return "upcoming";
+}
+
+const statusStyles = {
+  upcoming: "bg-amber-50 text-amber-700 ring-amber-200",
+  ongoing: "bg-sky-50 text-sky-700 ring-sky-200",
+  completed: "bg-green-50 text-green-700 ring-green-200",
+};
+
+const statusLabels = {
+  upcoming: "Upcoming",
+  ongoing: "Ongoing",
+  completed: "Completed",
+};
+
+function BookingItem({ row, onCancel }) {
+  const [imgError, setImgError] = useState(false);
+  const [confirming, setConfirming] = useState(false);
+  const { car, status } = row;
+
+  return (
+    <div className="flex flex-col gap-5 rounded-2xl bg-white p-5 shadow-md ring-1 ring-slate-200 sm:flex-row sm:items-center">
+      <div className="h-28 w-full shrink-0 overflow-hidden rounded-xl bg-gradient-to-br from-slate-200 to-slate-300 sm:w-40">
+        {car && !imgError ? (
+          <img src={car.image} alt={car.name} onError={() => setImgError(true)} className="h-full w-full object-cover" />
+        ) : (
+          <div className="flex h-full items-center justify-center text-4xl">🚗</div>
+        )}
+      </div>
+
+      <div className="min-w-0 flex-1">
+        <div className="flex flex-wrap items-center gap-3">
+          <h3 className="text-lg font-bold text-slate-900">{car ? car.name : "Car"}</h3>
+          <span className={"rounded-full px-3 py-0.5 text-xs font-semibold ring-1 " + statusStyles[status]}>{statusLabels[status]}</span>
+        </div>
+        <p className="mt-1 font-mono text-xs text-slate-400">{row.id}</p>
+        <p className="mt-3 text-sm text-slate-700">
+          {formatDate(row.pickupDate)} <span className="text-slate-400">to</span> {formatDate(row.returnDate)}
+          <span className="ml-2 text-slate-400">({row.days} {row.days === 1 ? "day" : "days"})</span>
+        </p>
+        {row.name && <p className="mt-1 text-sm text-slate-500">Booked by {row.name}</p>}
+      </div>
+
+      <div className="flex shrink-0 flex-row items-center justify-between gap-4 sm:flex-col sm:items-end">
+        <p className="text-xl font-extrabold text-slate-900">Rs. {row.total.toLocaleString()}</p>
+
+        {status === "upcoming" && (confirming ? (
+          <div className="flex gap-2">
+            <button onClick={() => onCancel(row.id)} className="rounded-lg bg-red-500 px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-red-600">Yes, cancel</button>
+            <button onClick={() => setConfirming(false)} className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100">Keep</button>
+          </div>
+        ) : (
+          <button onClick={() => setConfirming(true)} className="rounded-lg border border-red-200 px-3 py-1.5 text-sm font-medium text-red-600 transition hover:bg-red-50">Cancel booking</button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export default function BookingHistory({ bookings = [], onCancel, onClear }) {
+  const [confirmClear, setConfirmClear] = useState(false);
+  const today = getToday();
+
+  const rows = [...bookings].reverse().map((b) => {
+    const car = cars.find((c) => c.id === b.carId);
+    const days = daysBetween(b.pickupDate, b.returnDate);
+    const total = b.total ?? (car ? days * car.pricePerDay : 0);
+    return { ...b, car, days, total, status: getStatus(b, today) };
+  });
+
+  const activeCount = rows.filter((r) => r.status !== "completed").length;
+  const totalValue = rows.reduce((sum, r) => sum + r.total, 0);
+
+  const handleClear = () => {
+    onClear();
+    setConfirmClear(false);
+  };
+
+  return (
+    <section id="history" className="max-w-6xl mx-auto px-4 pb-20 scroll-mt-20">
+      <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p className="text-sm font-semibold uppercase tracking-widest text-amber-500">Your activity</p>
+          <h2 className="mt-2 text-3xl md:text-4xl font-extrabold text-slate-900">My bookings</h2>
+        </div>
+
+        {rows.length > 0 && (confirmClear ? (
+          <div className="flex items-center gap-2 text-sm">
+            <span className="text-slate-600">Delete all bookings?</span>
+            <button onClick={handleClear} className="rounded-lg bg-red-500 px-3 py-1.5 font-semibold text-white transition hover:bg-red-600">Yes, clear</button>
+            <button onClick={() => setConfirmClear(false)} className="rounded-lg border border-slate-300 px-3 py-1.5 font-medium text-slate-700 transition hover:bg-slate-100">No</button>
+          </div>
+        ) : (
+          <button onClick={() => setConfirmClear(true)} className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100">Clear history</button>
+        ))}
+      </div>
+
+      {rows.length === 0 ? (
+        <div className="rounded-2xl bg-white py-14 text-center shadow-md ring-1 ring-slate-200">
+          <p className="text-5xl">🗂️</p>
+          <h3 className="mt-4 text-xl font-bold text-slate-900">No bookings yet</h3>
+          <p className="mt-2 text-slate-600">Your bookings will appear here once you reserve a car.</p>
+        </div>
+      ) : (
+        <>
+          <div className="mb-8 grid grid-cols-3 gap-4">
+            <div className="rounded-2xl bg-white p-4 text-center shadow-md ring-1 ring-slate-200">
+              <p className="text-2xl font-extrabold text-slate-900 md:text-3xl">{rows.length}</p>
+              <p className="mt-1 text-xs text-slate-500 md:text-sm">Total bookings</p>
+            </div>
+            <div className="rounded-2xl bg-white p-4 text-center shadow-md ring-1 ring-slate-200">
+              <p className="text-2xl font-extrabold text-slate-900 md:text-3xl">{activeCount}</p>
+              <p className="mt-1 text-xs text-slate-500 md:text-sm">Active</p>
+            </div>
+            <div className="rounded-2xl bg-white p-4 text-center shadow-md ring-1 ring-slate-200">
+              <p className="text-lg font-extrabold text-slate-900 md:text-3xl">Rs. {totalValue.toLocaleString()}</p>
+              <p className="mt-1 text-xs text-slate-500 md:text-sm">Total value</p>
+            </div>
+          </div>
+
+          <div className="space-y-5">
+            {rows.map((row) => (
+              <BookingItem key={row.id} row={row} onCancel={onCancel} />
+            ))}
+          </div>
+        </>
+      )}
+    </section>
+  );
+}

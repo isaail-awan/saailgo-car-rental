@@ -5,10 +5,20 @@ const links = [
   { label: "Home", href: "#home" },
   { label: "Cars", href: "#cars" },
   { label: "Book Now", href: "#booking" },
+  { label: "My Bookings", href: "#history" },
   { label: "Contact", href: "#contact" },
 ];
 
-export default function Navbar() {
+function NavLabel({ link, count }) {
+  return (
+    <>
+      {link.label}
+      {link.href === "#history" && count > 0 && <span className="ml-2 rounded-full bg-amber-400 px-2 py-0.5 text-xs font-bold text-slate-900">{count}</span>}
+    </>
+  );
+}
+
+export default function Navbar({ bookingCount = 0 }) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -22,7 +32,7 @@ export default function Navbar() {
         <ul className="hidden md:flex items-center gap-8">
           {links.map((l) => (
             <li key={l.href}>
-              <a href={l.href} className="hover:text-amber-400 transition-colors">{l.label}</a>
+              <a href={l.href} className="hover:text-amber-400 transition-colors"><NavLabel link={l} count={bookingCount} /></a>
             </li>
           ))}
         </ul>
@@ -42,7 +52,7 @@ export default function Navbar() {
         <ul className="md:hidden bg-slate-900 px-4 pb-4 space-y-3">
           {links.map((l) => (
             <li key={l.href}>
-              <a href={l.href} onClick={() => setOpen(false)} className="block py-1 hover:text-amber-400">{l.label}</a>
+              <a href={l.href} onClick={() => setOpen(false)} className="block py-1 hover:text-amber-400"><NavLabel link={l} count={bookingCount} /></a>
             </li>
           ))}
         </ul>

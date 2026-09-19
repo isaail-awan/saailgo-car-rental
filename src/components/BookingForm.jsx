@@ -118,6 +118,9 @@ export default function BookingForm({ bookingRequest, bookings = [], onConfirm }
         carId: selectedCar.id,
         pickupDate: form.pickupDate,
         returnDate: form.returnDate,
+        name: form.name.trim(),
+        phone: form.phone,
+        total,
       };
 
       if (onConfirm) onConfirm(newBooking);
