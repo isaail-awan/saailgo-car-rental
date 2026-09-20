@@ -1,14 +1,13 @@
 import { Link } from "react-router-dom";
 import { brand } from "../data/brand";
+import Logo from "./Logo";
 
 export default function Footer() {
   return (
     <footer id="contact" className="bg-slate-900 text-slate-300 mt-16">
       <div className="max-w-6xl mx-auto px-4 py-10 grid gap-8 md:grid-cols-3">
         <div>
-          <h3 className="text-white text-xl font-bold mb-2">
-            {brand.first}<span className="text-amber-400">{brand.second}</span>
-          </h3>
+          <Link to="/#home" aria-label="Go to home page" className="mb-3 inline-block"><Logo /></Link>
           <p className="text-sm">Affordable and reliable car rental service. Book online in minutes.</p>
         </div>
 

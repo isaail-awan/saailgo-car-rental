@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { brand } from "../data/brand";
+import Logo from "./Logo";
 import ThemeToggle from "./ThemeToggle";
 import UserMenu from "./UserMenu";
 import useAuth from "../hooks/useAuth";
@@ -31,7 +31,7 @@ export default function Navbar({ bookingCount = 0, dark, onToggleTheme }) {
   return (
     <nav className="fixed top-0 inset-x-0 z-50 bg-slate-900/95 backdrop-blur text-white shadow dark:border-b dark:border-slate-800">
       <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-        <Link to="/#home" className="text-xl font-bold tracking-wide">{brand.first}<span className="text-amber-400">{brand.second}</span></Link>
+        <Link to="/#home" aria-label="Go to home page"><Logo /></Link>
 
         <div className="flex items-center gap-2">
           {/* Desktop menu */}

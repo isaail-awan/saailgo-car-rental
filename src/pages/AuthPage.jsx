@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, Navigate, useLocation } from "react-router-dom";
 import { brand } from "../data/brand";
 import useAuth from "../hooks/useAuth";
+import Logo from "../components/Logo";
 
 const perks = [
   "Book a car in a few clicks",
@@ -140,7 +141,7 @@ export default function AuthPage({ mode }) {
           <div className="anim-float-slow absolute -bottom-24 -left-24 h-72 w-72 rounded-full bg-sky-500/10 blur-3xl" style={{ animationDelay: "-6s" }} />
 
           <div className="relative">
-            <Link to="/#home" className="text-2xl font-bold tracking-wide">{brand.first}<span className="text-amber-400">{brand.second}</span></Link>
+            <Link to="/#home" aria-label="Go to home page" className="inline-block"><Logo textClass="text-2xl" markClass="h-11 w-11" /></Link>
             <h2 className="mt-10 text-3xl font-extrabold leading-tight">Your ride, <span className="text-amber-400">your way.</span></h2>
             <p className="mt-4 text-slate-300">Create an account to book cars faster and keep track of every rental in one place.</p>
 
