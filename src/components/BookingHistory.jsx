@@ -5,46 +5,15 @@ import CountUp from "./CountUp";
 import AuthGate from "./AuthGate";
 import useAuth from "../hooks/useAuth";
 import { getToday } from "../utils/bookings";
-
-function formatDate(iso) {
-  return new Date(iso + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
-}
-
-function formatDateTime(iso) {
-  return new Date(iso).toLocaleString("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true });
-}
-
-function daysBetween(a, b) {
-  return Math.max(0, Math.round((new Date(b) - new Date(a)) / 86400000));
-}
-
-function getStatus(booking, today) {
-  if (booking.status === "cancelled") return "cancelled";
-  if (booking.returnDate < today) return "completed";
-  if (booking.pickupDate <= today) return "ongoing";
-  return "upcoming";
-}
-
-const statusStyles = {
-  upcoming: "bg-amber-50 text-amber-700 ring-amber-200 dark:bg-amber-400/10 dark:text-amber-300 dark:ring-amber-400/30",
-  ongoing: "bg-sky-50 text-sky-700 ring-sky-200 dark:bg-sky-400/10 dark:text-sky-300 dark:ring-sky-400/30",
-  completed: "bg-green-50 text-green-700 ring-green-200 dark:bg-green-400/10 dark:text-green-300 dark:ring-green-400/30",
-  cancelled: "bg-red-50 text-red-700 ring-red-200 dark:bg-red-500/10 dark:text-red-300 dark:ring-red-500/30",
-};
-
-const statusLabels = {
-  upcoming: "Upcoming",
-  ongoing: "Ongoing",
-  completed: "Completed",
-  cancelled: "Cancelled",
-};
+import { formatDate, formatDateTime, daysBetween, getStatus, statusStyles, statusLabels } from "../utils/status";
 
 function BookingItem({ row, onCancel }) {
   const [imgError, setImgError] = useState(false);
   const [confirming, setConfirming] = useState(false);
   const { car, status } = row;
   const isCancelled = status === "cancelled";
-  const cancelledBy = row.cancelledBy ? row.cancelledBy.name : "";
+  const canCancel = status === "upcoming" || status === "confirmed";
+  const cancelledBy = row.cancelledBy ? row.cancelledBy.name + (row.cancelledBy.role === "admin" ? " (admin)" : "") : "";
 
   return (
     <div className="flex flex-col gap-5 rounded-2xl bg-white p-5 shadow-md ring-1 ring-slate-200 transition duration-300 hover:shadow-lg sm:flex-row sm:items-center dark:bg-slate-900 dark:ring-slate-800">
@@ -67,6 +36,7 @@ function BookingItem({ row, onCancel }) {
           <span className="ml-2 text-slate-400">({row.days} {row.days === 1 ? "day" : "days"})</span>
         </p>
         {row.name && <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Booked by {row.name}</p>}
+        {status === "confirmed" && row.confirmedAt && <p className="anim-fade-in mt-2 text-sm font-medium text-green-600 dark:text-green-400">Confirmed on {formatDateTime(row.confirmedAt)}</p>}
         {isCancelled && row.cancelledAt && (
           <p className="anim-fade-in mt-2 text-sm font-medium text-red-600 dark:text-red-400">
             Cancelled{cancelledBy ? " by " + cancelledBy : ""} on {formatDateTime(row.cancelledAt)}
@@ -77,7 +47,7 @@ function BookingItem({ row, onCancel }) {
       <div className="flex shrink-0 flex-row items-center justify-between gap-4 sm:flex-col sm:items-end">
         <p className={"text-xl font-extrabold " + (isCancelled ? "text-slate-400 line-through dark:text-slate-500" : "text-slate-900 dark:text-white")}>Rs. {row.total.toLocaleString()}</p>
 
-        {status === "upcoming" && (confirming ? (
+        {canCancel && (confirming ? (
           <div className="anim-fade-in flex gap-2">
             <button onClick={() => onCancel(row.id)} className="rounded-lg bg-red-500 px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-red-600 active:scale-95">Yes, cancel</button>
             <button onClick={() => setConfirming(false)} className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100 active:scale-95 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">Keep</button>
@@ -120,7 +90,7 @@ export default function BookingHistory({ bookings = [], onCancel, onClear }) {
     return { ...b, car, days, total, status: getStatus(b, today) };
   });
 
-  const activeCount = rows.filter((r) => r.status === "upcoming" || r.status === "ongoing").length;
+  const activeCount = rows.filter((r) => r.status === "upcoming" || r.status === "confirmed" || r.status === "ongoing").length;
   const cancelledCount = rows.filter((r) => r.status === "cancelled").length;
   const totalValue = rows.filter((r) => r.status !== "cancelled").reduce((sum, r) => sum + r.total, 0);
 

@@ -6,6 +6,7 @@ import ScrollToHash from "./components/ScrollToHash";
 import Home from "./pages/Home";
 import CarDetails from "./pages/CarDetails";
 import AuthPage from "./pages/AuthPage";
+import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 import useTheme from "./hooks/useTheme";
 import useAuth from "./hooks/useAuth";
@@ -14,7 +15,7 @@ import { loadBookings, saveBookings, isActive } from "./utils/bookings";
 export default function App() {
   const [bookings, setBookings] = useState(loadBookings);
   const [dark, toggleTheme] = useTheme();
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const location = useLocation();
 
   useEffect(() => {
@@ -28,11 +29,12 @@ export default function App() {
     setBookings((prev) => [...prev, booking]);
   };
 
+  // Customer apni booking cancel kare
   const cancelBooking = (id) => {
     if (!user) return;
     setBookings((prev) =>
       prev.map((b) =>
-        b.id === id && b.userId === user.id
+        b.id === id && b.userId === user.id && b.status !== "cancelled"
           ? { ...b, status: "cancelled", cancelledAt: new Date().toISOString(), cancelledBy: { userId: user.id, name: user.name, role: "customer" } }
           : b
       )
@@ -42,6 +44,29 @@ export default function App() {
   const clearBookings = () => {
     if (!user) return;
     setBookings((prev) => prev.filter((b) => b.userId !== user.id));
+  };
+
+  // Admin actions
+  const confirmBooking = (id) => {
+    if (!isAdmin) return;
+    setBookings((prev) =>
+      prev.map((b) =>
+        b.id === id && b.status !== "cancelled"
+          ? { ...b, status: "confirmed", confirmedAt: new Date().toISOString(), confirmedBy: { userId: user.id, name: user.name } }
+          : b
+      )
+    );
+  };
+
+  const adminCancelBooking = (id) => {
+    if (!isAdmin) return;
+    setBookings((prev) =>
+      prev.map((b) =>
+        b.id === id && b.status !== "cancelled"
+          ? { ...b, status: "cancelled", cancelledAt: new Date().toISOString(), cancelledBy: { userId: user.id, name: user.name, role: "admin" } }
+          : b
+      )
+    );
   };
 
   return (
@@ -56,6 +81,7 @@ export default function App() {
             <Route path="/cars/:id" element={<CarDetails bookings={bookings} />} />
             <Route path="/login" element={<AuthPage mode="login" />} />
             <Route path="/signup" element={<AuthPage mode="signup" />} />
+            <Route path="/admin" element={<Admin bookings={bookings} onConfirm={confirmBooking} onCancel={adminCancelBooking} />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </div>
