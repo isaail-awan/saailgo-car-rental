@@ -26,6 +26,7 @@ Add your Vercel link here.
 - Dark mode with saved preference
 - Scroll animations and micro-interactions, with support for reduced-motion settings
 - Fully responsive on mobile, tablet and desktop
+- Demo admin dashboard with overview stats, booking confirmation/cancellation, customers and fleet views, and CSV export (demo admin: `admin@saailgo.com` / `Admin@123`)
 
 ## Tech Stack
 
