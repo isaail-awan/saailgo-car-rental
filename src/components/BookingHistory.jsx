@@ -2,6 +2,8 @@ import { useState } from "react";
 import cars from "../data/cars";
 import Reveal from "./Reveal";
 import CountUp from "./CountUp";
+import AuthGate from "./AuthGate";
+import useAuth from "../hooks/useAuth";
 import { getToday } from "../utils/bookings";
 
 function formatDate(iso) {
@@ -42,6 +44,7 @@ function BookingItem({ row, onCancel }) {
   const [confirming, setConfirming] = useState(false);
   const { car, status } = row;
   const isCancelled = status === "cancelled";
+  const cancelledBy = row.cancelledBy ? row.cancelledBy.name : "";
 
   return (
     <div className="flex flex-col gap-5 rounded-2xl bg-white p-5 shadow-md ring-1 ring-slate-200 transition duration-300 hover:shadow-lg sm:flex-row sm:items-center dark:bg-slate-900 dark:ring-slate-800">
@@ -64,7 +67,11 @@ function BookingItem({ row, onCancel }) {
           <span className="ml-2 text-slate-400">({row.days} {row.days === 1 ? "day" : "days"})</span>
         </p>
         {row.name && <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Booked by {row.name}</p>}
-        {isCancelled && row.cancelledAt && <p className="anim-fade-in mt-2 text-sm font-medium text-red-600 dark:text-red-400">Cancelled on {formatDateTime(row.cancelledAt)}</p>}
+        {isCancelled && row.cancelledAt && (
+          <p className="anim-fade-in mt-2 text-sm font-medium text-red-600 dark:text-red-400">
+            Cancelled{cancelledBy ? " by " + cancelledBy : ""} on {formatDateTime(row.cancelledAt)}
+          </p>
+        )}
       </div>
 
       <div className="flex shrink-0 flex-row items-center justify-between gap-4 sm:flex-col sm:items-end">
@@ -84,8 +91,27 @@ function BookingItem({ row, onCancel }) {
 }
 
 export default function BookingHistory({ bookings = [], onCancel, onClear }) {
+  const { user } = useAuth();
   const [confirmClear, setConfirmClear] = useState(false);
   const today = getToday();
+
+  if (!user) {
+    return (
+      <section id="history" className="max-w-6xl mx-auto px-4 pb-20 scroll-mt-20">
+        <Reveal>
+          <div className="mb-8">
+            <p className="text-sm font-semibold uppercase tracking-widest text-amber-500">Your activity</p>
+            <h2 className="mt-2 text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white">My bookings</h2>
+          </div>
+        </Reveal>
+        <Reveal animation="zoom">
+          <div className="mx-auto max-w-xl">
+            <AuthGate title="Log in to see your bookings" text="Your booking history, upcoming trips and cancellations appear here once you are logged in." state={{ from: "/#history" }} />
+          </div>
+        </Reveal>
+      </section>
+    );
+  }
 
   const rows = [...bookings].reverse().map((b) => {
     const car = cars.find((c) => c.id === b.carId);
@@ -121,7 +147,7 @@ export default function BookingHistory({ bookings = [], onCancel, onClear }) {
 
           {rows.length > 0 && (confirmClear ? (
             <div className="anim-fade-in flex items-center gap-2 text-sm">
-              <span className="text-slate-600 dark:text-slate-400">Delete all bookings?</span>
+              <span className="text-slate-600 dark:text-slate-400">Delete all your bookings?</span>
               <button onClick={handleClear} className="rounded-lg bg-red-500 px-3 py-1.5 font-semibold text-white transition hover:bg-red-600 active:scale-95">Yes, clear</button>
               <button onClick={() => setConfirmClear(false)} className="rounded-lg border border-slate-300 px-3 py-1.5 font-medium text-slate-700 transition hover:bg-slate-100 active:scale-95 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">No</button>
             </div>

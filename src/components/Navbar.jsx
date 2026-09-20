@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { brand } from "../data/brand";
 import ThemeToggle from "./ThemeToggle";
+import UserMenu from "./UserMenu";
+import useAuth from "../hooks/useAuth";
 
 const links = [
   { label: "Home", to: "/#home" },
@@ -24,6 +26,7 @@ const desktopLinkClass = "relative transition-colors hover:text-amber-400 after:
 
 export default function Navbar({ bookingCount = 0, dark, onToggleTheme }) {
   const [open, setOpen] = useState(false);
+  const { user } = useAuth();
 
   return (
     <nav className="fixed top-0 inset-x-0 z-50 bg-slate-900/95 backdrop-blur text-white shadow dark:border-b dark:border-slate-800">
@@ -32,7 +35,7 @@ export default function Navbar({ bookingCount = 0, dark, onToggleTheme }) {
 
         <div className="flex items-center gap-2">
           {/* Desktop menu */}
-          <ul className="hidden md:flex items-center gap-8 mr-4">
+          <ul className="hidden lg:flex items-center gap-8 mr-2">
             {links.map((l) => (
               <li key={l.to}>
                 <Link to={l.to} className={desktopLinkClass}><NavLabel link={l} count={bookingCount} /></Link>
@@ -42,9 +45,18 @@ export default function Navbar({ bookingCount = 0, dark, onToggleTheme }) {
 
           <ThemeToggle dark={dark} onToggle={onToggleTheme} />
 
+          {user ? (
+            <UserMenu />
+          ) : (
+            <div className="hidden lg:flex items-center gap-2 ml-1">
+              <Link to="/login" className="rounded-lg px-3 py-1.5 text-sm font-medium transition hover:text-amber-400">Log in</Link>
+              <Link to="/signup" className="rounded-lg bg-amber-400 px-4 py-1.5 text-sm font-semibold text-slate-900 transition hover:bg-amber-300 active:scale-95">Sign up</Link>
+            </div>
+          )}
+
           {/* Mobile toggle */}
           <button
-            className="md:hidden text-2xl w-9 h-9"
+            className="lg:hidden text-2xl w-9 h-9"
             onClick={() => setOpen(!open)}
             aria-label="Toggle menu"
           >
@@ -55,12 +67,19 @@ export default function Navbar({ bookingCount = 0, dark, onToggleTheme }) {
 
       {/* Mobile menu */}
       {open && (
-        <ul className="anim-slide-down md:hidden bg-slate-900 px-4 pb-4 space-y-3">
+        <ul className="anim-slide-down lg:hidden bg-slate-900 px-4 pb-4 space-y-3">
           {links.map((l) => (
             <li key={l.to}>
               <Link to={l.to} onClick={() => setOpen(false)} className="block py-1 hover:text-amber-400"><NavLabel link={l} count={bookingCount} /></Link>
             </li>
           ))}
+
+          {!user && (
+            <li className="flex gap-3 border-t border-slate-700 pt-4">
+              <Link to="/login" onClick={() => setOpen(false)} className="flex-1 rounded-lg border border-slate-600 py-2 text-center font-medium transition hover:border-amber-400 hover:text-amber-400">Log in</Link>
+              <Link to="/signup" onClick={() => setOpen(false)} className="flex-1 rounded-lg bg-amber-400 py-2 text-center font-semibold text-slate-900 transition hover:bg-amber-300">Sign up</Link>
+            </li>
+          )}
         </ul>
       )}
     </nav>

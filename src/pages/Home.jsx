@@ -5,10 +5,10 @@ import CarList from "../components/CarList";
 import BookingForm from "../components/BookingForm";
 import BookingHistory from "../components/BookingHistory";
 
-export default function Home({ bookings, onConfirm, onCancel, onClear }) {
+export default function Home({ bookings, myBookings, onConfirm, onCancel, onClear }) {
   const location = useLocation();
 
-  // Details page se "Book this car" dabane par car pehle se select ho
+  // Details page ya login ke baad car pehle se select ho
   const [bookingRequest, setBookingRequest] = useState(() => {
     const carId = location.state && location.state.carId;
     return carId ? { carId, stamp: location.state.stamp } : null;
@@ -25,7 +25,7 @@ export default function Home({ bookings, onConfirm, onCancel, onClear }) {
       <Hero />
       <CarList onBook={handleBook} bookings={bookings} />
       <BookingForm bookingRequest={bookingRequest} bookings={bookings} onConfirm={onConfirm} />
-      <BookingHistory bookings={bookings} onCancel={onCancel} onClear={onClear} />
+      <BookingHistory bookings={myBookings} onCancel={onCancel} onClear={onClear} />
     </>
   );
 }
